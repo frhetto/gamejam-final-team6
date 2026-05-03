@@ -78,9 +78,26 @@ public class HUDManager : MonoBehaviour
         if (show) interactFill.fillAmount = normalized;
     }
 
-    public void ShowWin()  { IsGameOver = true; winPanel.SetActive(true); }
-    public void ShowLose() { IsGameOver = true; losePanel.SetActive(true); }
+    void EndGame()
+    {
+        IsGameOver = true;
+        Time.timeScale = 0f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 
-    public void Restart()     => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    public void GoMainMenu()  => SceneManager.LoadScene(mainMenuScene);
+    public void ShowWin()  { EndGame(); winPanel.SetActive(true); }
+    public void ShowLose() { EndGame(); losePanel.SetActive(true); }
+
+    public void Restart()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void GoMainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(mainMenuScene);
+    }
 }

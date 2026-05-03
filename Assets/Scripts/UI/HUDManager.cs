@@ -29,6 +29,8 @@ public class HUDManager : MonoBehaviour
     bool lowWarning;
     float pulse;
 
+    public static bool IsGameOver { get; set; }
+
     void Awake()
     {
         if (Instance != null) { Destroy(gameObject); return; }
@@ -37,6 +39,11 @@ public class HUDManager : MonoBehaviour
 
     void Start()
     {
+        IsGameOver = false;
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         winPanel.SetActive(false);
         losePanel.SetActive(false);
         interactBarRoot.SetActive(false);
@@ -71,8 +78,8 @@ public class HUDManager : MonoBehaviour
         if (show) interactFill.fillAmount = normalized;
     }
 
-    public void ShowWin()  => winPanel.SetActive(true);
-    public void ShowLose() => losePanel.SetActive(true);
+    public void ShowWin()  { IsGameOver = true; winPanel.SetActive(true); }
+    public void ShowLose() { IsGameOver = true; losePanel.SetActive(true); }
 
     public void Restart()     => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     public void GoMainMenu()  => SceneManager.LoadScene(mainMenuScene);

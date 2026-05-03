@@ -5,30 +5,39 @@ using UnityEngine.UI;
 public class MainMenuManager : MonoBehaviour
 {
     [Header("Panels")]
-    [SerializeField] GameObject mainPanel;
-    [SerializeField] GameObject settingsPanel;
+    [SerializeField] private GameObject mainPanel;
+    [SerializeField] private GameObject settingsPanel;
 
     [Header("Settings Sliders")]
-    [SerializeField] Slider musicSlider;
-    [SerializeField] Slider sfxSlider;
+    [SerializeField] private Slider volumeSlider;
 
     [Header("Scene")]
-    [SerializeField] string gameSceneName = "Level";
+    [SerializeField] private string gameSceneName = "Level";
 
-    void Start()
+    private void Start()
     {
         ShowMain();
+        SetupVolumeSlider();
+    }
 
-        if (AudioManager.Instance == null) return;
-        musicSlider.SetValueWithoutNotify(AudioManager.Instance.GetMusicVolume());
-        sfxSlider.SetValueWithoutNotify(AudioManager.Instance.GetSFXVolume());
+    private void SetupVolumeSlider()
+    {
+        if (AudioManager.Instance == null || volumeSlider == null)
+            return;
+
+        volumeSlider.minValue = 0f;
+        volumeSlider.maxValue = 1f;
+        volumeSlider.wholeNumbers = false;
+
+        volumeSlider.onValueChanged.RemoveAllListeners();
+        volumeSlider.SetValueWithoutNotify(AudioManager.Instance.GetVolume());
+        volumeSlider.onValueChanged.AddListener(AudioManager.Instance.SetVolume);
     }
 
     public void ShowMain()
     {
         mainPanel.SetActive(true);
         settingsPanel.SetActive(false);
-
     }
 
     public void ShowSettings()
@@ -37,15 +46,15 @@ public class MainMenuManager : MonoBehaviour
         settingsPanel.SetActive(true);
     }
 
-
-    public void OnMusicSliderChanged(float value) => AudioManager.Instance?.SetMusicVolume(value);
-    public void OnSFXSliderChanged(float value)   => AudioManager.Instance?.SetSFXVolume(value);
-
-    public void PlayGame() => SceneManager.LoadScene(gameSceneName);
+    public void PlayGame()
+    {
+        SceneManager.LoadScene(gameSceneName);
+    }
 
     public void QuitGame()
     {
         Application.Quit();
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif

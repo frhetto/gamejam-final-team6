@@ -1,43 +1,57 @@
 using UnityEngine;
-using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager Instance { get; private set; }
-
-    [SerializeField] AudioMixer mixer;
-
-    const string MUSIC_KEY = "MusicVolume";
-    const string SFX_KEY   = "SFXVolume";
+    public static AudioManager Instance;
+    const string VolumeKey = "MasterVolume";
 
     void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        ApplyAll();
     }
 
-    public void SetMusicVolume(float linear)
+    void OnEnable()
     {
-        mixer.SetFloat("MusicVol", ToDb(linear));
-        PlayerPrefs.SetFloat(MUSIC_KEY, linear);
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    public void SetSFXVolume(float linear)
+    void OnDisable()
     {
-        mixer.SetFloat("SFXVol", ToDb(linear));
-        PlayerPrefs.SetFloat(SFX_KEY, linear);
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    public float GetMusicVolume() => PlayerPrefs.GetFloat(MUSIC_KEY, 0.75f);
-    public float GetSFXVolume()   => PlayerPrefs.GetFloat(SFX_KEY,   0.75f);
-
-    void ApplyAll()
+    void Start()
     {
-        SetMusicVolume(GetMusicVolume());
-        SetSFXVolume(GetSFXVolume());
+        ApplySaved();
     }
 
-    static float ToDb(float linear) => Mathf.Log10(Mathf.Max(linear, 0.0001f)) * 20f;
+    void OnSceneLoaded(Scene s, LoadSceneMode m)
+    {
+        ApplySaved();
+    }
+
+    public void SetVolume(float v)
+    {
+        v = Mathf.Clamp01(v);
+        AudioListener.volume = v;
+        PlayerPrefs.SetFloat(VolumeKey, v);
+        PlayerPrefs.Save();
+    }
+
+    public float GetVolume()
+    {
+        return PlayerPrefs.GetFloat(VolumeKey, 1f);
+    }
+
+    void ApplySaved()
+    {
+        AudioListener.volume = GetVolume();
+    }
 }

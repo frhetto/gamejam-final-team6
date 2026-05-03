@@ -13,7 +13,7 @@ public class KeypadManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] string correctCode = "1000";
     [SerializeField] int maxDigits = 4;
-    [SerializeField] float interactRadius = 3f;
+    [SerializeField] float interactRadius = 2.5f;
     [SerializeField] string playerTag = "Player";
 
     [Header("On Correct")]
@@ -23,13 +23,24 @@ public class KeypadManager : MonoBehaviour
     bool solved = false;
     Transform _player;
 
+    // True when this script lives on (or inside) the UI panel itself.
+    // In that case it's only here for the button OnClick wiring -
+    // it must NOT run distance / pressE / open-close logic, otherwise
+    // it fights with the world-space keypad component.
+    bool isUIPanelComponent;
+
     void Start()
     {
-        if (keypadPanel != null && !IsAncestorOrSelf(keypadPanel.transform))
+        isUIPanelComponent = keypadPanel != null && IsAncestorOrSelf(keypadPanel.transform);
+
+        if (keypadPanel != null && !isUIPanelComponent)
             keypadPanel.SetActive(false);
 
         if (feedbackText != null) feedbackText.text = "";
         if (displayText != null) displayText.text = "";
+
+        if (isUIPanelComponent) return; // button-handler-only mode, skip the rest
+
         if (pressEText != null) pressEText.SetActive(false);
         else Debug.LogWarning("KeypadManager: Press E Text is not assigned!", this);
 
@@ -40,6 +51,7 @@ public class KeypadManager : MonoBehaviour
 
     void Update()
     {
+        if (isUIPanelComponent) return;        // never run interaction logic from the UI duplicate
         if (HUDManager.IsGameOver) return;
 
         if (_player == null)

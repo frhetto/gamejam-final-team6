@@ -1,0 +1,14 @@
+# Unity generated
+Library/
+Temp/
+Logs/
+UserSettings/
+
+# IDE
+.vscode/
+*.csproj
+*.sln
+*.user
+
+# OS
+.DS_Store
